@@ -1,8 +1,3 @@
-const yargs = require('yargs');
-const colors = require('./colors');
-
-
-
 /**
  * Validate if the input password meets the criteria
  * @param {string} input - The password to check
