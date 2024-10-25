@@ -1,8 +1,9 @@
-{
-  "minLength": 8,
-  "minDigits": 2,
-  "minSpecials": 1,
-  "minUppercase": 1,
-  "minLowercase": 1,
-  "maxLength": 16
-}
+
+# this is a comment
+  minLength=8
+  minDigits =2
+  minSpecials=1
+  minUppercase= 1
+  minLowercase=1
+  maxLength=16
+
