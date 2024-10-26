@@ -1,5 +1,7 @@
-const yargs = require('yargs')
-const colors = require('./colors')
+const yargs = require("yargs");
+const colors = require('./colors');  // Assuming colors is correctly set up
+const readCpc = require('./config/configReader');  // Adjust the path as needed
+
 /**
  * Validate if the input password meets the criteria
  * @param {string} input - The password to check
@@ -17,8 +19,7 @@ function validateInput(input, minlength, minDigits, minSpecials) {
     }
 
     let digitCount = 0,
-        specialCharCount = 0,
-        upperCaseCount = 0;
+        specialCharCount = 0;
 
     for (let char of input) {
         if (/\d/.test(char)) digitCount++;
@@ -26,7 +27,6 @@ function validateInput(input, minlength, minDigits, minSpecials) {
     }
 
     if (digitCount < minDigits) {
-
         console.log(
             `${colors.Fg.Red}Password should contain at least ${minDigits} digits.${colors.Reset}`
         );
@@ -35,35 +35,11 @@ function validateInput(input, minlength, minDigits, minSpecials) {
 
     if (specialCharCount < minSpecials) {
         console.log(
-
             `${colors.Fg.Red}Password should contain at least ${minSpecials} special characters.${colors.Reset}`
         );
         return false;
     }
-    if (!checkReccurringChars(input)) {
-        errorList.push('should not contain recurring characters')
-        return false;
-    }
-    return true;
-}
-let errorList = [];
 
-function checkReccurringChars(input) {
-    if (typeof input !== 'string')
-        return false;
-    for (let i = 1; i < input.length; i++) {
-        for (let j = i - 1; j < input.length; j++) {
-            if (input.charAt(i) === input.charAt(j)) {
-
-                console.log(
-                    `${colors.Fg.Red}Password should not contain recurring characters. Found ${input.charAt(i)} and ${input.charAt(j)} ${colors.Reset}`
-                );
-
-                return false;
-            }
-        };
-    };
-    console.log('valid');
     return true;
 }
 
@@ -72,7 +48,21 @@ function checkReccurringChars(input) {
  * @param {object} argv - The parsed arguments
  */
 function handleCheckCommand(argv) {
-    const { minlength, minDigits, password, minSpecials } = argv;
+    let minlength, minDigits, minSpecials, password;
+
+    if (argv.config) {
+        console.log(`Reading config from: ${argv.config}`);
+        const config = readCpc(argv.config);
+        minlength = parseInt(config.minlength, 10);
+        minDigits = parseInt(config.minDigits, 10);
+        minSpecials = parseInt(config.minSpecials, 10);
+        password = argv.password;
+    } else {
+        minlength = argv.minlength;
+        minDigits = argv.minDigits;
+        minSpecials = argv.minSpecials;
+        password = argv.password;
+    }
 
     if (!password) {
         console.error(
@@ -85,24 +75,25 @@ function handleCheckCommand(argv) {
     if (res) console.log(`${colors.Fg.Green}Password is valid${colors.Reset}`);
 }
 
-yargs
+const argv = yargs
     .command({
         command: "check",
         describe: "Check if the input password meets the criteria",
         builder: {
+            config: {
+                describe: "Path to the config file",
+                type: "string",
+            },
             minlength: {
                 describe: "Minimum length of the password",
-                demandOption: true,
                 type: "number",
             },
             minDigits: {
                 describe: "Minimum number of digits in the password",
-                demandOption: true,
                 type: "number",
             },
             minSpecials: {
                 describe: "Minimum number of special characters in the password",
-                demandOption: true,
                 type: "number",
             },
             password: {
@@ -113,4 +104,6 @@ yargs
         },
         handler: handleCheckCommand,
     })
-    .help().argv;
+    .help()
+    .argv;
+
