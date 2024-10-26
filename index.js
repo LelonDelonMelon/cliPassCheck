@@ -2,6 +2,7 @@ const yargs = require('yargs');
 const colors = require('./colors');
 
 function validateInput(input, minlength, minDigits, minSpecials) {
+
     if (input.length < minlength) {
         console.log(`${colors.Fg.Red}Password is too short. Minimum length required is ${minlength}.${colors.Reset}`);
         return false;
