@@ -43,7 +43,6 @@ function minimumLowercaseHandler(pass, minLowercase) {
 function recurringCharacterHandler(pass) {
     return /(.).*\1/.test(pass);
 }
-
 module.exports = {
     maximumLengthHandler,
     minimumLengthHandler,

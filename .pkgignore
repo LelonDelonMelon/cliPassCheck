@@ -5,3 +5,5 @@ assets/
 .git/
 .gitignore
 
+#Ignore node modules
+node_modules/
