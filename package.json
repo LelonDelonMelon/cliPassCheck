@@ -1,5 +1,25 @@
 {
+  "name": "cli-password-checker",
+  "version": "1.0.0",
+  "description": "A CLI tool to validate password strength based on configurable criteria.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "build:linux": "pkg . --target node18-linux-x64 --output cliPass",
+    "build:win": "pkg . --target node18-win-x64 --output cliPass.exe"
+  },
+  "bin": {
+    "cliPass": "./index.js"
+  },
   "dependencies": {
     "yargs": "^17.7.2"
-  }
+  },
+  "pkg": {
+    "assets": [
+      "config/*.cpc"
+    ]
+  },
+  "author": "LelonDelonMelon",
+  "license": "MIT"
 }
+

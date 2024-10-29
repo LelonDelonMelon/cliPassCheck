@@ -1,3 +1,10 @@
+#executables
+*.exe
+*.bin
+*.out
+cliPass
+cliPass.exe
+
 # Logs
 logs
 *.log

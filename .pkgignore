@@ -1,0 +1,7 @@
+# Ignore the assets folder
+assets/
+
+# Ignore Git files
+.git/
+.gitignore
+
