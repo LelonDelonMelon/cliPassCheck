@@ -4,39 +4,67 @@ function secureRandomChoice(arr) {
     const idx = crypto.randomInt(0, arr.length);
     return arr[idx];
 }
+function secureRandomIndex() {
+    const idx = crypto.randomInt(0, 4);
+    return idx;
+}
 
+
+function fixBoundaries(password, digits, specials, uppercase, lowercase, flag) {
+
+    if (flag !== 1) {
+        const rand = crypto.randomInt(1, 4);
+        if (rand === 1) password.push(secureRandomChoice(digits))
+        if (rand === 2) password.push(secureRandomChoice(specials))
+        if (rand === 3) password.push(secureRandomChoice(uppercase))
+        if (rand === 4) password.push(secureRandomChoice(lowercase))
+
+    } else {
+        const rand = crypto.randomInt(1, 4);
+        if (rand === 1) password.pop(secureRandomChoice(digits))
+        if (rand === 2) password.push(secureRandomChoice(specials))
+        if (rand === 3) password.push(secureRandomChoice(uppercase))
+        if (rand === 4) password.push(secureRandomChoice(lowercase))
+
+    }
+}
 function generatePassword(minLength, minDigits, minSpecials, minUppercase, minLowercase, maxLength) {
     const digits = '0123456789';
     const specials = '!@#$%^&*()_+[]{}|;:,.<>?';
     const lowercase = 'abcdefghijklmnopqrstuvwxyz';
     const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
+    let curLength, curDigits, curSpecials, curLowerCase, curUpperCase;
     let password = [];
 
     // Add required characters for each type
-    for (let i = 0; i < minDigits; i++) {
-        password.push(secureRandomChoice(digits));
-        console.log("pushed digits")
-    }
-    for (let i = 0; i < minSpecials; i++) {
-        password.push(secureRandomChoice(specials));
+    for (let i = curLength; i < minLength; curLength++) {
+        for (let i = curDigits; i < minDigits; curDigits) {
+            password.push(secureRandomChoice(digits));
+            console.log("pushed digits")
+        }
+        for (let i = curSpecials; i < minSpecials; curSpecials++) {
+            password.push(secureRandomChoice(specials));
 
-        console.log("pushed specials")
+            console.log("pushed specials")
 
-    }
-    for (let i = 0; i < minUppercase; i++) {
-        password.push(secureRandomChoice(uppercase));
+        }
+        for (let i = curUpperCase; i < minUppercase; curUpperCase++) {
+            password.push(secureRandomChoice(uppercase));
 
-        console.log("pushed uppercase")
+            console.log("pushed uppercase")
 
-    }
-    for (let i = 0; i < minLowercase; i++) {
-        password.push(secureRandomChoice(lowercase));
+        }
+        for (let i = curLowerCase; i < minLowercase; curLowerCase++) {
+            password.push(secureRandomChoice(lowercase));
 
-        console.log("pushed lowercase")
+            console.log("pushed lowercase")
+        }
 
-    }
-
+        fixBoundaries(password, digits, specials, uppercase, lowercase, 0);
+    };
+    if (curLength >= maxLength)
+        fixBoundaries(password, digits, specials, uppercase, lowercase, 1)
     // Fill remaining length with random characters up to minLength or maxLength
     const allCharacters = digits + specials + lowercase + uppercase;
     while (password.length < minLength) {
