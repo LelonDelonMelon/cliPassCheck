@@ -133,7 +133,7 @@ The comprehensive test suite includes:
 To run the tests with coverage report:
 
 ```sh
-npm test -- --coverage
+npm test --coverage
 ```
 
 ## Contributing
