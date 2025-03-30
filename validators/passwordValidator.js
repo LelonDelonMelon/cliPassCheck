@@ -9,6 +9,7 @@ const validators = require("./index");
  * @param {number} maxLength - Maximum password length
  * @param {number} minUppercase - Minimum number of uppercase letters required
  * @param {number} minLowercase - Minimum number of lowercase letters required
+ * @param {boolean} noRecurring - Whether to disallow recurring characters
  * @returns {string[]} - Array of validation error messages, empty if password is valid
  */
 function validateInput(
@@ -18,7 +19,8 @@ function validateInput(
   minSpecial,
   maxLength,
   minUppercase,
-  minLowercase
+  minLowercase,
+  noRecurring
 ) {
   const errors = [];
 
@@ -61,6 +63,13 @@ function validateInput(
   if (validators.minimumLowercaseHandler(password, minLowercase)) {
     errors.push(
       `- Password must contain at least ${minLowercase} lowercase letter(s)\n`
+    );
+  }
+
+  // Check for recurring characters if noRecurring is true
+  if (noRecurring && validators.recurringCharacterHandler(password)) {
+    errors.push(
+      `- Password must not contain recurring characters\n`
     );
   }
 
