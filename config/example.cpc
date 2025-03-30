@@ -1,9 +1,9 @@
 
 # this is a comment
-  minLength=8
-  minDigits =2
-  minSpecials=1
-  minUppercase= 1
-  minLowercase=1
-  maxLength=16
-
+minLength = 16
+maxLength = 32
+minDigits = 2
+minSpecials = 2
+minUppercase = 2
+minLowercase = 2
+noRecurring = true

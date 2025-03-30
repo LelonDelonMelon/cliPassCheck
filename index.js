@@ -14,20 +14,22 @@ function getConfig(argv) {
         return {
             minLength: parseInt(config.minLength, 10) || 8,
             minDigits: parseInt(config.minDigits, 10) || 1,
-            minSpecials: parseInt(config.minSpecials, 10) || 1,
+            minSpecial: parseInt(config.minSpecials, 10) || 1, 
             maxLength: parseInt(config.maxLength, 10) || 32,
             minUppercase: parseInt(config.minUppercase, 10) || 1,
-            minLowercase: parseInt(config.minLowercase, 10) || 1
+            minLowercase: parseInt(config.minLowercase, 10) || 1,
+            noRecurring: config.noRecurring === "true" 
         };
     }
     
     return {
         minLength: argv.minLength || 8,
         minDigits: argv.minDigits || 1,
-        minSpecials: argv.minSpecials || 1,
+        minSpecial: argv.minSpecials || 1, 
         maxLength: argv.maxLength || 32,
         minUppercase: argv.minUppercase || 1,
-        minLowercase: argv.minLowercase || 1
+        minLowercase: argv.minLowercase || 1,
+        noRecurring: argv.noRecurring || false
     };
 }
 
@@ -35,7 +37,7 @@ function getConfig(argv) {
  * Handle the `validate` command
  */
 function handleValidateCommand(argv) {
-    const { minLength, minDigits, minSpecials, maxLength, minUppercase, minLowercase } = getConfig(argv);
+    const { minLength, minDigits, minSpecial, maxLength, minUppercase, minLowercase } = getConfig(argv);
 
     const password = argv.password;
     if (!password) {
@@ -50,7 +52,7 @@ function handleValidateCommand(argv) {
             password,
             minLength,
             minDigits,
-            minSpecials,
+            minSpecial,
             maxLength,
             minUppercase,
             minLowercase
@@ -75,18 +77,10 @@ function handleValidateCommand(argv) {
  * Handle the `generate` command
  */
 function handleGenerateCommand(argv) {
-    const { minLength, minDigits, minSpecials, maxLength, minUppercase, minLowercase } = getConfig(argv);
+    const config = getConfig(argv);
 
     try {
-        const generatedPassword = generatePassword({
-            minLength,
-            maxLength,
-            minDigits,
-            minSpecial: minSpecials,
-            minUppercase,
-            minLowercase,
-            noRecurring: argv.noRecurring || false
-        });
+        const generatedPassword = generatePassword(config);
         console.log(
             `${colors.Fg.Green}Generated Password: ${generatedPassword}${colors.Reset}`
         );
