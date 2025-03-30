@@ -1,21 +1,25 @@
 # Password Checker CLI
 
-A Node.js command-line application to validate passwords based on configurable criteria. This tool allows checking if a password meets certain security requirements, such as minimum length, number of digits, and number of special characters. You can specify these criteria directly via command-line arguments or through a configuration file with a `.cpc` extension.
+A Node.js command-line application for password validation and generation. This tool allows you to generate secure passwords and validate them against configurable criteria, such as minimum length, number of digits, and special characters. You can specify these criteria directly via command-line arguments or through a configuration file with a `.cpc` extension.
 
 ![Password Checker CLI Demo](./assets/cpcdemo.gif)
 
 ## Features
 
-- Validate password length, digit count, and special character count.
-- Support for configuration files with `.cpc` extension.
-- Colored output for better readability.
+- Generate cryptographically secure passwords
+- Validate passwords against customizable criteria
+- Support for configuration files with `.cpc` extension
+- Colored output for better readability
 
-## Currently Supported Validation Criterias
+## Validation Criteria
 
-- Minimum length (`--minlength`).
-- Minimum number of digits (`--minDigits`).
-- Minimum number of special characters (`--minSpecials`).
-- Recurring character check (by default)
+- Minimum length (`--minLength`)
+- Maximum length (`--maxLength`)
+- Minimum number of digits (`--minDigits`)
+- Minimum number of special characters (`--minSpecials`)
+- Minimum number of uppercase letters (`--minUppercase`)
+- Minimum number of lowercase letters (`--minLowercase`)
+- Option to disallow recurring characters (`--noRecurring`)
 
 ## Installation
 
@@ -34,72 +38,124 @@ A Node.js command-line application to validate passwords based on configurable c
 
 ## Usage
 
-You can pass the password criteria directly as CLI arguments:
+The CLI provides two main commands: `generate` and `validate`.
+
+### Generating Passwords
+
+Generate a password using command-line arguments:
 
 ```sh
-node index.js check --password "yourpassword" --minlength 8 --minDigits 2 --minSpecials 1
+node index.js generate --minLength 12 --minDigits 2 --minSpecials 2 --minUppercase 1 --minLowercase 1
 ```
 
-## Configuration File
+Generate a password using a configuration file:
 
-Alternatively, you can use a configuration file to specify the validation criteria:
+```sh
+node index.js generate --config "./config/example.cpc"
+```
 
-1. Create a `.cpc` configuration file with the following format:
+### Validating Passwords
 
-   ```
-   minlength = 8
-   minDigits = 2
-   minSpecials = 1
-   ```
+Validate a password using command-line arguments:
 
-2. Run the command with the `--config` argument, passing the path to your `.cpc` file:
+```sh
+node index.js validate --password "YourPassword123!" --minLength 8 --minDigits 2 --minSpecials 1
+```
 
-   ```sh
-   node index.js check --password "yourpassword" --config "./path/to/config.cpc"
-   ```
+Validate a password using a configuration file:
 
-   - The default configuration file is at `./config/example.cpc`
+```sh
+node index.js validate --password "YourPassword123!" --config "./config/example.cpc"
+```
 
 ## Configuration File Format
 
 The configuration file should have a `.cpc` extension and contain key-value pairs for the criteria. For example:
 
-```
+```ini
 # example.cpc
-minlength = 8
+minLength = 8
+maxLength = 32
 minDigits = 2
 minSpecials = 1
+minUppercase = 1
+minLowercase = 1
 ```
 
-## Example
+Comments start with `#` and are ignored.
 
-Running with Command-Line Arguments
+## Command Options
+
+### Common Options (Available for both commands)
+
+- `--config`: Path to the configuration file (optional)
+- `--minLength`: Minimum password length (default: 8)
+- `--maxLength`: Maximum password length (default: 32)
+- `--minDigits`: Minimum number of digits (default: 1)
+- `--minSpecials`: Minimum number of special characters (default: 1)
+
+### Generate Command Options
+
+- `--minUppercase`: Minimum number of uppercase letters (default: 1)
+- `--minLowercase`: Minimum number of lowercase letters (default: 1)
+- `--noRecurring`: Disallow recurring characters (default: false)
+
+### Validate Command Options
+
+- `--password`: The password to validate (required)
+
+## Examples
+
+1. Generate a strong password:
 
 ```sh
-node index.js check --password "deneme123" --minlength 8 --minDigits 2 --minSpecials 1
+node index.js generate --minLength 16 --minDigits 3 --minSpecials 2 --noRecurring
 ```
 
-Running with a Configuration File
+2. Generate a password using default settings:
 
-1. Create a config file called config.cpc
-
+```sh
+node index.js generate
 ```
-#config.cpc
-minlength = 8
+
+3. Validate a password with custom requirements:
+
+```sh
+node index.js validate --password "MyStr0ng\!Pass" --minLength 12 --minDigits 2
+```
+
+4. Using a configuration file:
+
+```sh
+# First, create a config file:
+echo "minLength = 12
 minDigits = 2
-minSpecials = 1
+minSpecials = 2
+minUppercase = 1
+minLowercase = 1" > config.cpc
+
+# Then use it for generation or validation:
+node index.js generate --config "./config.cpc"
+node index.js validate --password "YourPassword123!" --config "./config.cpc"
 ```
 
-2. Run the following command:
+## Getting Help
+
+To see all available commands and options:
 
 ```sh
-node index.js check --password "pass123" --config "./config.cpc"
+node index.js --help
+```
+
+To see options for a specific command:
+
+```sh
+node index.js generate --help
+node index.js validate --help
 ```
 
 ## Dependencies
 
-This package requires:
-
-- nodejs: ^20.x.x
-- npm: ^10.x.x
-- yargs: ^17.7.2
+- Node.js (v12 or higher)
+- yargs: Command-line argument parsing
+- crypto: Cryptographically secure random number generation

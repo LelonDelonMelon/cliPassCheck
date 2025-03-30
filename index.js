@@ -1,131 +1,175 @@
 const yargs = require("yargs");
 const colors = require("./colors");
 const readCpc = require("./config/configReader");
-const validators = require("./validators");
-const generator = require("./generators");
+const generatePassword = require("./generators/passwordGenerator");
+const validateInput = require("./validators/passwordValidator");
 
 /**
- * Validate if the input password meets the criteria
- * @param {string} input - The password to check
- * @param {number} minLength - The minimum length of the password
- * @param {number} minDigits - The minimum number of digits in the password
- * @param {number} minSpecials - The minimum number of special characters in the password
- * @param {number} maxLength - The maximum length of the password
- * @returns {array} - List of issues if the password is invalid; empty array if valid
+ * Get configuration from either config file or command line arguments
  */
-function validateInput(input, minLength, minDigits, minSpecials, maxLength) {
-    const problemList = [];
-    if (validators.minimumDigitsHandler(input, minDigits)) {
-        problemList.push(`Password should have at least ${minDigits} digits.\n`);
-    }
-    if (validators.minimumSpecialsHandler(input, minSpecials)) {
-        problemList.push(`Password should have at least ${minSpecials} special characters.\n`);
-    }
-    if (validators.minimumUppercaseHandler(input, minDigits)) {
-        problemList.push(`Password should have at least ${minDigits} uppercase letters.\n`);
-    }
-    if (validators.minimumLowercaseHandler(input, minDigits)) {
-        problemList.push(`Password should have at least ${minDigits} lowercase letters.\n`);
-    }
-    if (validators.recurringCharacterHandler(input)) {
-        problemList.push(`Password should not have any recurring characters.\n`);
-    }
-    if (validators.maximumLengthHandler(input, maxLength)) {
-        problemList.push(`Password should not exceed ${maxLength} characters.\n`);
-    }
-    if (validators.minimumLengthHandler(input, minLength)) {
-        problemList.push(`Password should be at least ${minLength} characters.\n`);
-    }
-    return problemList;
-}
-
-/**
- * Handle the `check` command
- * @param {object} argv - The parsed arguments
- */
-function handleCheckCommand(argv) {
-    let minLength, minDigits, minSpecials, maxLength;
-
-    // Load from config if provided
+function getConfig(argv) {
     if (argv.config) {
         console.log(`Reading config from: ${argv.config}`);
         const config = readCpc(argv.config);
-        minLength = parseInt(config.minLength, 10);
-        minDigits = parseInt(config.minDigits, 10);
-        minSpecials = parseInt(config.minSpecials, 10);
-        maxLength = parseInt(config.maxLength, 10);
-    } else {
-        minLength = argv.minLength;
-        minDigits = argv.minDigits;
-        minSpecials = argv.minSpecials;
-        maxLength = argv.maxLength;
+        return {
+            minLength: parseInt(config.minLength, 10) || 8,
+            minDigits: parseInt(config.minDigits, 10) || 1,
+            minSpecials: parseInt(config.minSpecials, 10) || 1,
+            maxLength: parseInt(config.maxLength, 10) || 32,
+            minUppercase: parseInt(config.minUppercase, 10) || 1,
+            minLowercase: parseInt(config.minLowercase, 10) || 1
+        };
     }
+    
+    return {
+        minLength: argv.minLength || 8,
+        minDigits: argv.minDigits || 1,
+        minSpecials: argv.minSpecials || 1,
+        maxLength: argv.maxLength || 32,
+        minUppercase: argv.minUppercase || 1,
+        minLowercase: argv.minLowercase || 1
+    };
+}
 
-    // Handle password generation if --generate is true
-    if (argv.generate) {
-        const generatedPassword = generator(
-            minLength,
-            minDigits,
-            minSpecials,
-            maxLength
-        );
-        console.log(`${colors.Fg.Green}Generated Password: ${generatedPassword}${colors.Reset}`);
-        return;
-    }
+/**
+ * Handle the `validate` command
+ */
+function handleValidateCommand(argv) {
+    const { minLength, minDigits, minSpecials, maxLength, minUppercase, minLowercase } = getConfig(argv);
 
-    // Validate password if provided
     const password = argv.password;
     if (!password) {
-        console.error(`${colors.Fg.Red}The --password argument is required unless --generate is specified.${colors.Reset}`);
+        console.error(
+            `${colors.Fg.Red}The --password argument is required for validation.${colors.Reset}`
+        );
         process.exit(1);
     }
 
-    const res = validateInput(password, minLength, minDigits, minSpecials, maxLength);
+    try {
+        const res = validateInput(
+            password,
+            minLength,
+            minDigits,
+            minSpecials,
+            maxLength,
+            minUppercase,
+            minLowercase
+        );
 
-    if (res.length === 0) {
-        console.log(`${colors.Fg.Green}Password is valid${colors.Reset}`);
-    } else {
-        console.log(`${colors.Bg.Red}Password is invalid. Check the following requirements:${colors.Reset}`);
-        console.log(`${colors.Fg.Red}\n${res.join("")}${colors.Reset}`);
+        if (res.length === 0) {
+            console.log(`${colors.Fg.Green}Password is valid${colors.Reset}`);
+        } else {
+            console.error(
+                `${colors.Bg.Red}Password is invalid. Check the following requirements:${colors.Reset}`
+            );
+            console.error(`${colors.Fg.Red}\n${res.join("")}${colors.Reset}`);
+            process.exit(1);
+        }
+    } catch (e) {
+        console.error(`${colors.Fg.Red}Error occurred: ${e.message}${colors.Reset}`);
+        process.exit(1);
     }
 }
 
-const argv = yargs
-    .command({
-        command: "check",
-        describe: "Check if the input password meets the criteria or generate a new one",
-        builder: {
-            config: {
-                describe: "Path to the config file",
-                type: "string",
-            },
-            minLength: {
-                describe: "Minimum length of the password",
-                type: "number",
-            },
-            minDigits: {
-                describe: "Minimum number of digits in the password",
-                type: "number",
-            },
-            minSpecials: {
-                describe: "Minimum number of special characters in the password",
-                type: "number",
-            },
-            maxLength: {
-                describe: "Maximum length of the password",
-                type: "number",
-            },
-            password: {
-                describe: "Password to check",
-                type: "string",
-            },
-            generate: {
-                describe: "Generate a new password based on given criteria",
-                type: "boolean",
-                default: false,
-            },
-        },
-        handler: handleCheckCommand,
-    })
-    .help().argv;
+/**
+ * Handle the `generate` command
+ */
+function handleGenerateCommand(argv) {
+    const { minLength, minDigits, minSpecials, maxLength, minUppercase, minLowercase } = getConfig(argv);
 
+    try {
+        const generatedPassword = generatePassword({
+            minLength,
+            maxLength,
+            minDigits,
+            minSpecial: minSpecials,
+            minUppercase,
+            minLowercase,
+            noRecurring: argv.noRecurring || false
+        });
+        console.log(
+            `${colors.Fg.Green}Generated Password: ${generatedPassword}${colors.Reset}`
+        );
+    } catch (error) {
+        console.error(
+            `${colors.Fg.Red}Failed to generate password: ${error.message}${colors.Reset}`
+        );
+        process.exit(1);
+    }
+}
+
+// Common options for both commands
+const commonOptions = {
+    config: {
+        describe: "Path to the config file",
+        type: "string"
+    },
+    minLength: {
+        describe: "Minimum length of the password",
+        type: "number",
+        default: 8
+    },
+    minDigits: {
+        describe: "Minimum number of digits",
+        type: "number",
+        default: 1
+    },
+    minSpecials: {
+        describe: "Minimum number of special characters",
+        type: "number",
+        default: 1
+    },
+    maxLength: {
+        describe: "Maximum length of the password",
+        type: "number",
+        default: 32
+    },
+    minUppercase: {
+        describe: "Minimum number of uppercase letters",
+        type: "number",
+        default: 1
+    },
+    minLowercase: {
+        describe: "Minimum number of lowercase letters",
+        type: "number",
+        default: 1
+    }
+};
+
+yargs
+    .scriptName("cli-password-checker")
+    .usage("$0 <command> [options]")
+    .command({
+        command: "validate",
+        describe: "Validate a password against specified criteria",
+        builder: {
+            ...commonOptions,
+            password: {
+                describe: "Password to validate",
+                type: "string",
+                demandOption: true
+            }
+        },
+        handler: handleValidateCommand
+    })
+    .command({
+        command: "generate",
+        describe: "Generate a password meeting specified criteria",
+        builder: {
+            ...commonOptions,
+            noRecurring: {
+                describe: "Disallow recurring characters",
+                type: "boolean",
+                default: false
+            }
+        },
+        handler: handleGenerateCommand
+    })
+    .strict()
+    .demandCommand(1, "You must provide a valid command")
+    .fail(function (msg, err, yargs) {
+        console.error(`${colors.Fg.Red}${msg || (err && err.message) || 'Unknown argument: invalid-command'}${colors.Reset}`);
+        process.exit(1);
+    })
+    .help()
+    .argv;

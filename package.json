@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "build:linux": "pkg . --target node18-linux-x64 --output cliPass2",
-    "build:win": "pkg . --target node18-win-x64 --output cliPass.exe"
+    "build:win": "pkg . --target node18-win-x64 --output cliPass.exe",
+    "test": "jest"
   },
   "bin": {
     "cliPass": "./index.js"
@@ -20,6 +21,8 @@
     ]
   },
   "author": "LelonDelonMelon",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
 }
-
