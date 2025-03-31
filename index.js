@@ -5,12 +5,27 @@ const generatePassword = require("./generators/passwordGenerator");
 const validateInput = require("./validators/passwordValidator");
 
 /**
- * Get configuration from config file
+ * Get configuration from either config file or command line arguments
  */
 async function getConfig(argv) {
+  // If command line arguments are provided, use them
+  if (argv.minLength || argv.minDigits || argv.minSpecials || argv.maxLength || 
+      argv.minUppercase || argv.minLowercase || argv.noRecurring) {
+    return {
+      minLength: parseInt(argv.minLength, 10) || 8,
+      minDigits: parseInt(argv.minDigits, 10) || 1,
+      minSpecial: parseInt(argv.minSpecials, 10) || 1,
+      maxLength: parseInt(argv.maxLength, 10) || 32,
+      minUppercase: parseInt(argv.minUppercase, 10) || 1,
+      minLowercase: parseInt(argv.minLowercase, 10) || 1,
+      noRecurring: argv.noRecurring === true || argv.noRecurring === "true",
+    };
+  }
+
+  // If no command line arguments, try to use config file
   if (!argv.config) {
     console.error(
-      `${colors.Fg.Red}The --config argument is required. Please provide a .cpc config file.${colors.Reset}`
+      `${colors.Fg.Red}Either provide command line arguments or use --config with a .cpc config file.${colors.Reset}`
     );
     process.exit(1);
   }
@@ -110,22 +125,14 @@ const commonOptions = {
   config: {
     describe: "Path to the config file",
     type: "string",
-    demandOption: true,
   },
 };
 
-// Configure CLI commands
 yargs
-  .command(
-    "generate",
-    "Generate a password",
-    commonOptions,
-    handleGenerateCommand
-  )
-  .command(
-    "validate",
-    "Validate a password",
-    {
+  .command({
+    command: "validate",
+    describe: "Validate a password",
+    builder: {
       ...commonOptions,
       password: {
         describe: "Password to validate",
@@ -133,7 +140,43 @@ yargs
         demandOption: true,
       },
     },
-    handleValidateCommand
-  )
+    handler: handleValidateCommand,
+  })
+  .command({
+    command: "generate",
+    describe: "Generate a password",
+    builder: {
+      ...commonOptions,
+      minLength: {
+        describe: "Minimum password length",
+        type: "number",
+      },
+      maxLength: {
+        describe: "Maximum password length",
+        type: "number",
+      },
+      minDigits: {
+        describe: "Minimum number of digits",
+        type: "number",
+      },
+      minSpecials: {
+        describe: "Minimum number of special characters",
+        type: "number",
+      },
+      minUppercase: {
+        describe: "Minimum number of uppercase characters",
+        type: "number",
+      },
+      minLowercase: {
+        describe: "Minimum number of lowercase characters",
+        type: "number",
+      },
+      noRecurring: {
+        describe: "Disallow recurring characters",
+        type: "boolean",
+      },
+    },
+    handler: handleGenerateCommand,
+  })
   .demandCommand(1, "You must provide a valid command")
   .help().argv;
