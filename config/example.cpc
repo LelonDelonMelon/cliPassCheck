@@ -7,3 +7,12 @@ minSpecials = 2
 minUppercase = 2
 minLowercase = 2
 noRecurring = true
+
+# Cpc is configurable with environment variables
+#minLength = ${MIN_LENGTH}
+#maxLength = ${MAX_LENGTH}
+#minDigits = ${MIN_DIGITS}
+#minSpecials = ${MIN_SPECIALS}
+#minUppercase = ${MIN_UPPERCASE}
+#minLowercase = ${MIN_LOWERCASE}
+#noRecurring = ${NO_RECURRING}
