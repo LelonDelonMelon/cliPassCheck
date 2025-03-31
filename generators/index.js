@@ -1,14 +1,8 @@
 const crypto = require("crypto");
 //const validateInput = require("../index.js").validateInput;
-const indexModule = require("../index");
-console.log("Imported module:", indexModule);
 function secureRandomChoice(arr) {
   const idx = crypto.randomInt(0, arr.length);
   return arr[idx];
-}
-function secureRandomIndex() {
-  const idx = crypto.randomInt(0, 4);
-  return idx;
 }
 
 function fixBoundaries(password, digits, specials, uppercase, lowercase, flag) {

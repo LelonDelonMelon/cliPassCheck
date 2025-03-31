@@ -95,7 +95,7 @@ async function handleGenerateCommand(argv) {
     const config = await getConfig(argv);
     const generatedPassword = generatePassword(config);
     console.log(
-      `${colors.Fg.Green}Generated Password: ${generatedPassword}${colors.Reset}`
+      `${colors.Fg.Green}Generated Password: \n${colors.Underscore}${generatedPassword}${colors.Reset}`
     );
   } catch (error) {
     console.error(
