@@ -96,7 +96,7 @@ noRecurring = false`
 
     it('should validate using config file', () => {
       const result = execSync(
-        `node ${cliPath} validate --password "Str1@Pa2#Zk" --config "${testConfigPath}"`,
+        `node ${cliPath} validate --password "Str1@Pa2#Zk9" --config "${testConfigPath}"`,
         { encoding: 'utf8' }
       );
       expect(result).toContain('Password is valid');
